@@ -1,0 +1,165 @@
+<html>
+
+<head>
+<title>
+a5viewer
+</title>
+<script>
+function drawER() {
+	var myFile = document.getElementById("input_a5er").files[0];
+	var reader = new FileReader();
+ 	var entities = new Array();
+ 	var relations = new Array();
+
+	reader.onload = function(evt){
+		var canvasEr = document.getElementById('canvas_er');
+		var width = canvasEr.width;
+		var height = canvasEr.height;
+
+		var ctx = canvasEr.getContext('2d');
+
+		var txt = evt.target.result;
+		var txtArr = txt.split(/\r\n|\r|\n/);
+		txtArr.reverse();
+
+		var entity = new Array();
+		var relation = new Array();
+		var fields = new Array();
+		for (var line in txtArr) {
+			if (txtArr[line].match(/^Position=.*,(\d+),(\d+)$/)) {
+				entity.x = RegExp.$1;
+				entity.y = RegExp.$2;
+			} else if (txtArr[line].match(/^Field=\"(.*?)\",\"(.*?)\"/)) {
+				var field = { name: RegExp.$1, key: RegExp.$2 };
+				var nameWidth = ctx.measureText(RegExp.$1).width;
+				if (entity.nameWidth == undefined) {
+					entity.nameWidth = nameWidth;
+				} else if (entity.nameWidth < nameWidth) {
+					entity.nameWidth = nameWidth;
+				}
+				var keyWidth = ctx.measureText(RegExp.$2).width;
+				if (entity.keyWidth == undefined) {
+					entity.keyWidth = keyWidth;
+				} else if (entity.keyWidth < keyWidth) {
+					entity.keyWidth = keyWidth;
+				}
+				fields.unshift(field);
+			} else if (txtArr[line].match(/^PName=(.+)/)) {
+				entity.key = RegExp.$1;
+				var nameWidth = ctx.measureText(RegExp.$1).width;
+				if (entity.nameWidth == undefined) {
+					entity.nameWidth = nameWidth;
+				} else if (entity.nameWidth < nameWidth) {
+					entity.nameWidth = nameWidth;
+				}
+			} else if (txtArr[line].match(/^LName=(.+)/)) {
+				entity.name = RegExp.$1;
+				var keyWidth = ctx.measureText(RegExp.$1).width;
+				if (entity.keyWidth == undefined) {
+					entity.keyWidth = keyWidth;
+				} else if (entity.keyWidth < keyWidth) {
+					entity.keyWidth = keyWidth;
+				}
+			} else if (txtArr[line].match(/^Entity1=(.+)/)) {
+				relation.entity1 = RegExp.$1;
+			} else if (txtArr[line].match(/^Entity2=(.+)/)) {
+				relation.entity2 = RegExp.$1;
+			} else if (txtArr[line].match(/^Bar1=(\d+)/)) {
+				relation.x = RegExp.$1;
+			} else if (txtArr[line].match(/^Bar2=(\d+)/)) {
+				relation.y = RegExp.$1;
+			} else if (txtArr[line].match(/^Bar3=(\d+)/)) {
+				relation.z = RegExp.$1;
+			} else if (txtArr[line].match(/^Left=(\d+)/)) {
+				entity.x = RegExp.$1;
+			} else if (txtArr[line].match(/^Top=(\d+)/)) {
+				entity.y = RegExp.$1;
+			} else if (txtArr[line] == "[Entity]") {
+				entity.fields = fields;
+				entities.unshift(entity);
+				entity = new Array();
+				fields = new Array();
+				relation = new Array();
+			} else if (txtArr[line] == "[Relation]") {
+				relations.unshift(relation);
+				entity = new Array();
+				fields = new Array();
+				relation = new Array();
+			}
+		}
+
+		ctx.lineWidth = 0.5;
+		ctx.clearRect(0, 0, width, height);
+
+		for (var i in relations) {
+			var relation = relations[i];
+			var left = parseInt(relation.x, 10);
+			var top = parseInt(relation.y, 10);
+			var top2 = parseInt(relation.z, 10);
+			var entity1 = relation.entity1;
+			var entity2 = relation.entity2;
+
+			var objEntity1 = undefined;
+			for (var j in entities) {
+				if (entity1 == entities[j].key) {
+					objEntity1 = entities[j];
+				}
+			} 
+			var objEntity2 = undefined;
+			for (var j in entities) {
+				if (entity2 == entities[j].key) {
+					objEntity2 = entities[j];
+				}
+			} 
+
+			ctx.fillText(entity1, left + parseInt(objEntity1.x), top + parseInt(objEntity1.y));
+			ctx.fillText(entity2, left + parseInt(objEntity2.x), top2 + parseInt(objEntity2.y));
+
+			ctx.beginPath();
+			ctx.moveTo(parseInt(objEntity1.x) + 16, parseInt(objEntity1.y) + 16);
+			ctx.lineTo(parseInt(objEntity2.x) + 16, parseInt(objEntity2.y) + 16);
+			ctx.stroke();
+		}
+
+		for (var i in entities) {
+			var entity = entities[i];
+			var left = parseInt(entity.x, 10);
+			var top = parseInt(entity.y, 10);
+			var right = parseInt(entity.nameWidth, 10) + parseInt(entity.keyWidth, 10);
+			var bottom = top + (entity.fields.length * 16);
+			ctx.clearRect(left-4, top+4, right +12, bottom-top+4);
+
+			var offset = parseInt(entity.nameWidth, 10);
+
+			ctx.fillText(entity.name, left, top);
+			ctx.fillText(entity.key, left + offset + 4, top);
+
+			for (var j in entity.fields) {
+				ctx.fillText(entity.fields[j].name, left, top + (parseInt(j)+1) * 16);
+				ctx.fillText(entity.fields[j].key, left + offset + 4, top + (parseInt(j)+1) * 16);
+			}
+
+			// ctx.clearRect(left-4, top+4, 128+12, bottom-top+8);
+			ctx.strokeRect(left-4, top+4, right +12, bottom-top+4);
+		}
+
+
+		
+	}
+	reader.readAsText(myFile, 'utf-8');
+}
+</script>
+
+</head>
+
+<body>
+<input id='input_a5er' type='file' />
+<input type="button" value="Draw" onClick="drawER()">
+<br />
+<canvas id='canvas_er' width='2048px' height='2048px' style='border:1px; border-color:gray;'>
+
+</canvas>
+
+</body>
+
+</html>
