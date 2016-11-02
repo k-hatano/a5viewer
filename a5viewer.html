@@ -22,6 +22,8 @@ function drawER() {
 		var txtArr = txt.split(/\r\n|\r|\n/);
 		txtArr.reverse();
 
+		var viewLevel = document.getElementById("view_level").value;
+
 		var entity = new Array();
 		var relation = new Array();
 		var fields = new Array();
@@ -29,8 +31,8 @@ function drawER() {
 			if (txtArr[line].match(/^Position=.*,(\d+),(\d+)$/)) {
 				entity.x = RegExp.$1;
 				entity.y = RegExp.$2;
-			} else if (txtArr[line].match(/^Field=\"(.*?)\",\"(.*?)\"/)) {
-				var field = { name: RegExp.$1, key: RegExp.$2 };
+			} else if (txtArr[line].match(/^Field=\"(.*?)\",\"(.*?)\",\"(.*?)\"/)) {
+				var field = { name: RegExp.$1, key: RegExp.$2, type: RegExp.$3 };
 				var nameWidth = ctx.measureText(RegExp.$1).width;
 				if (entity.nameWidth == undefined) {
 					entity.nameWidth = nameWidth;
@@ -42,6 +44,12 @@ function drawER() {
 					entity.keyWidth = keyWidth;
 				} else if (entity.keyWidth < keyWidth) {
 					entity.keyWidth = keyWidth;
+				}
+				var typeWidth = ctx.measureText(RegExp.$3).width;
+				if (entity.typeWidth == undefined) {
+					entity.typeWidth = typeWidth;
+				} else if (entity.typeWidth < typeWidth) {
+					entity.typeWidth = typeWidth;
 				}
 				fields.unshift(field);
 			} else if (txtArr[line].match(/^PName=(.+)/)) {
@@ -125,18 +133,32 @@ function drawER() {
 			var entity = entities[i];
 			var left = parseInt(entity.x, 10);
 			var top = parseInt(entity.y, 10);
-			var right = parseInt(entity.nameWidth, 10) + parseInt(entity.keyWidth, 10);
+			var right = parseInt(entity.nameWidth, 10);
 			var bottom = top + (entity.fields.length * 16);
+			if (viewLevel == 1) {
+				right = parseInt(entity.nameWidth, 10) + parseInt(entity.keyWidth, 10);
+			} else if (viewLevel == 2) {
+				right = parseInt(entity.nameWidth, 10) + parseInt(entity.typeWidth, 10);
+			} 
 			ctx.clearRect(left-4, top+4, right +12, bottom-top+4);
 
 			var offset = parseInt(entity.nameWidth, 10);
 
 			ctx.fillText(entity.name, left, top);
-			ctx.fillText(entity.key, left + offset + 4, top);
-
 			for (var j in entity.fields) {
 				ctx.fillText(entity.fields[j].name, left, top + (parseInt(j)+1) * 16);
-				ctx.fillText(entity.fields[j].key, left + offset + 4, top + (parseInt(j)+1) * 16);
+			}
+
+			if (viewLevel == 1) {
+				ctx.fillText(entity.key, left + offset + 4, top);
+				for (var j in entity.fields) {
+					ctx.fillText(entity.fields[j].key, left + offset + 4, top + (parseInt(j)+1) * 16);
+				}
+			} else if (viewLevel == 2) {
+				for (var j in entity.fields) {
+					ctx.fillText(entity.fields[j].type, left + offset + 4, top + (parseInt(j)+1) * 16);
+				}
+				
 			}
 
 			// ctx.clearRect(left-4, top+4, 128+12, bottom-top+8);
@@ -156,6 +178,13 @@ function drawER() {
 <input id='input_a5er' type='file' />
 <input type="button" value="Draw" onClick="drawER()">
 <br />
+<label for="view_level">View Level: </label>
+<select id="view_level" onchange="drawER()">
+	<option value="0">Attributes Only</a>
+	<option value="1">Attributes & Pyhsical Names</a>
+	<option value="2">Attributes & Types</a>
+</select>
+<hr />
 <canvas id='canvas_er' width='2048px' height='2048px' style='border:1px; border-color:gray;'>
 
 </canvas>
