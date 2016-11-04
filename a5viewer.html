@@ -105,36 +105,6 @@ function drawER() {
 		ctx.lineWidth = 0.5;
 		ctx.clearRect(0, 0, width, height);
 
-		for (var i in relations) {
-			var relation = relations[i];
-			var left = parseInt(relation.x, 10) / xRate;
-			var top = parseInt(relation.y, 10) / yRate;
-			var top2 = parseInt(relation.z, 10) / yRate;
-			var entity1 = relation.entity1;
-			var entity2 = relation.entity2;
-
-			var objEntity1 = undefined;
-			for (var j in entities) {
-				if (entity1 == entities[j].key) {
-					objEntity1 = entities[j];
-				}
-			} 
-			var objEntity2 = undefined;
-			for (var j in entities) {
-				if (entity2 == entities[j].key) {
-					objEntity2 = entities[j];
-				}
-			} 
-
-			ctx.fillText(entity1, left + parseInt(objEntity1.x), top + parseInt(objEntity1.y));
-			ctx.fillText(entity2, left + parseInt(objEntity2.x), top2 + parseInt(objEntity2.y));
-
-			ctx.beginPath();
-			ctx.moveTo(parseInt(objEntity1.x) / xRate + 16, parseInt(objEntity1.y) / yRate + 16);
-			ctx.lineTo(parseInt(objEntity2.x) / xRate + 16, parseInt(objEntity2.y) / yRate + 16);
-			ctx.stroke();
-		}
-
 		for (var i in entities) {
 			var entity = entities[i];
 			var left = parseInt(entity.x, 10) / xRate;
@@ -167,8 +137,60 @@ function drawER() {
 				
 			}
 
+			entities[i].left = parseInt(left-4);
+			entities[i].top = parseInt(top+4);
+			entities[i].width = parseInt(right +12);
+			entities[i].height = parseInt(bottom-top+4);
+			entities[i].right = parseInt(entities[i].left + entities[i].width);
+			entities[i].bottom = parseInt(entities[i].top + entities[i].height);
+
 			// ctx.clearRect(left-4, top+4, 128+12, bottom-top+8);
-			ctx.strokeRect(left-4, top+4, right +12, bottom-top+4);
+			ctx.strokeRect(entities[i].left, entities[i].top, entities[i].width, entities[i].height);
+
+		}
+
+		for (var i in relations) {
+			var relation = relations[i];
+			var left = parseInt(relation.x, 10) / xRate;
+			var top = parseInt(relation.y, 10) / yRate;
+			var top2 = parseInt(relation.z, 10) / yRate;
+			var entity1 = relation.entity1;
+			var entity2 = relation.entity2;
+
+			var objEntity1 = undefined;
+			for (var j in entities) {
+				if (entity1 == entities[j].key) {
+					objEntity1 = entities[j];
+				}
+			} 
+			var objEntity2 = undefined;
+			for (var j in entities) {
+				if (entity2 == entities[j].key) {
+					objEntity2 = entities[j];
+				}
+			} 
+
+			if (objEntity1.left > objEntity2.right) {
+				var objEntity3 = objEntity2;
+				objEntity2 = objEntity1;
+				objEntity1 = objEntity3;
+			}
+
+			var x1 = objEntity1.right;
+			var y1 = (objEntity1.top + objEntity1.bottom) / 2;
+			var x2 = (objEntity1.right + objEntity2.left) / 2;
+			var y2 = (objEntity1.top + objEntity1.bottom) / 2;
+			var x3 = (objEntity1.right + objEntity2.left) / 2;
+			var y3 = (objEntity2.top + objEntity2.bottom) / 2;
+			var x4 = objEntity2.left;
+			var y4 = (objEntity2.top + objEntity2.bottom) / 2;
+
+			ctx.beginPath();
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+			ctx.lineTo(x3, y3);
+			ctx.lineTo(x4, y4);
+			ctx.stroke();
 		}
 
 
