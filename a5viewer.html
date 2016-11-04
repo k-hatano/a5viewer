@@ -176,14 +176,31 @@ function drawER() {
 				objEntity1 = objEntity3;
 			}
 
-			var x1 = objEntity1.right;
-			var y1 = (objEntity1.top + objEntity1.bottom) / 2;
-			var x2 = (objEntity1.right + objEntity2.left) / 2;
-			var y2 = (objEntity1.top + objEntity1.bottom) / 2;
-			var x3 = (objEntity1.right + objEntity2.left) / 2;
-			var y3 = (objEntity2.top + objEntity2.bottom) / 2;
-			var x4 = objEntity2.left;
-			var y4 = (objEntity2.top + objEntity2.bottom) / 2;
+			if (objEntity1.top > objEntity2.bottom) {
+				var objEntity3 = objEntity2;
+				objEntity2 = objEntity1;
+				objEntity1 = objEntity3;
+			}
+
+			if (objEntity1.right < objEntity2.left) {
+				var x1 = objEntity1.right;
+				var y1 = (objEntity1.top + objEntity1.bottom) / 2;
+				var x2 = (objEntity1.right + objEntity2.left) / 2;
+				var y2 = (objEntity1.top + objEntity1.bottom) / 2;
+				var x3 = (objEntity1.right + objEntity2.left) / 2;
+				var y3 = (objEntity2.top + objEntity2.bottom) / 2;
+				var x4 = objEntity2.left;
+				var y4 = (objEntity2.top + objEntity2.bottom) / 2;
+			} else {
+				var x1 = (objEntity1.right + objEntity1.left) / 2;
+				var y1 = objEntity1.bottom;
+				var x2 = (objEntity1.right + objEntity1.left) / 2;
+				var y2 = (objEntity2.top + objEntity1.bottom) / 2;
+				var x3 = (objEntity2.right + objEntity2.left) / 2;
+				var y3 = (objEntity2.top + objEntity1.bottom) / 2;
+				var x4 = (objEntity2.right + objEntity2.left) / 2;
+				var y4 = objEntity2.top
+			}
 
 			ctx.beginPath();
 			ctx.moveTo(x1, y1);
