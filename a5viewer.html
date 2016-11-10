@@ -13,10 +13,35 @@
 		var xRate = 2;
 		var yRate = 2;
 
+		var scrollX = 0;
+		var scrollY = 0;
+		var origX = 0;
+		var origY = 0;
+		var dragging = false;
+
+		onload = function() {
+			var canvasEr = document.getElementById('canvas_er');
+			canvasEr.onmousedown = function(e) {
+				erMouseDown(e);
+			};
+			canvasEr.onmousemout = function(e) {
+				erMouseOut(e);
+			};
+			canvasEr.onmouseup = function(e) {
+				erMouseUp(e);
+			};
+			canvasEr.onmousemove = function(e) {
+				erMouseMove(e);
+			};
+		}
+
 		function drawER() {
 			var canvasEr = document.getElementById('canvas_er');
 			var width = canvasEr.width;
 			var height = canvasEr.height;
+
+			var maxWidth = 0;
+			var maxHeight = 0;
 
 			var ctx = canvasEr.getContext('2d');
 
@@ -43,23 +68,23 @@
 				} else if (viewLevel == 2) {
 					right = parseInt(entity.nameWidth, 10) + parseInt(entity.typeWidth, 10);
 				} 
-				ctx.clearRect(left-4, top+4, right +12, bottom-top+4);
+				ctx.clearRect(left-4 + scrollX, top+4 + scrollY, right +12, bottom-top+4);
 
 				var offset = parseInt(entity.nameWidth, 10);
 
-				ctx.fillText(entity.name, left, top);
+				ctx.fillText(entity.name, left + scrollX, top + scrollY);
 				for (var j in entity.fields) {
-					ctx.fillText(entity.fields[j].name, left, top + (parseInt(j)+1) * 16);
+					ctx.fillText(entity.fields[j].name, left + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 				}
 
 				if (viewLevel == 1) {
-					ctx.fillText(entity.key, left + offset + 4, top);
+					ctx.fillText(entity.key, left + offset + 4 + scrollX, top + scrollY);
 					for (var j in entity.fields) {
-						ctx.fillText(entity.fields[j].key, left + offset + 4, top + (parseInt(j)+1) * 16);
+						ctx.fillText(entity.fields[j].key, left + offset + 4 + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 					}
 				} else if (viewLevel == 2) {
 					for (var j in entity.fields) {
-						ctx.fillText(entity.fields[j].type, left + offset + 4, top + (parseInt(j)+1) * 16);
+						ctx.fillText(entity.fields[j].type, left + offset + 4 + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 					}
 
 				}
@@ -72,8 +97,15 @@
 				entities[i].bottom = parseInt(entities[i].top + entities[i].height);
 
 				// ctx.clearRect(left-4, top+4, 128+12, bottom-top+8);
-				ctx.strokeRect(entities[i].left, entities[i].top, entities[i].width, entities[i].height);
+				ctx.strokeRect(entities[i].left + scrollX, entities[i].top + scrollY, entities[i].width, entities[i].height);
 
+				if (maxWidth < entities[i].right) {
+					maxWidth = entities[i].right;
+				}
+
+				if (maxHeight < entities[i].bottom) {
+					maxHeight = entities[i].bottom;
+				}
 			}
 
 			for (var i in relations) {
@@ -135,10 +167,10 @@
 				}
 
 				ctx.beginPath();
-				ctx.moveTo(x1, y1);
-				ctx.lineTo(x2, y2);
-				ctx.lineTo(x3, y3);
-				ctx.lineTo(x4, y4);
+				ctx.moveTo(x1 + scrollX, y1 + scrollY);
+				ctx.lineTo(x2 + scrollX, y2 + scrollY);
+				ctx.lineTo(x3 + scrollX, y3 + scrollY);
+				ctx.lineTo(x4 + scrollX, y4 + scrollY);
 				ctx.stroke();
 			}
 		}
@@ -247,11 +279,37 @@
 					selectPage.options[page] = new Option(pages[page]);
 				}
 
+				scrollX = 0;
+				scrollY = 0;
+
 				drawER();
 
 			}
 			reader.readAsText(myFile, 'utf-8');
 		}
+
+		function erMouseDown(e) {
+			origX = scrollX - e.offsetX;
+			origY = scrollY - e.offsetY;
+			dragging = true;
+		}
+
+		function erMouseUp(e) {
+			dragging = false;
+		}
+
+		function erMouseOut(e) {
+			dragging = false;
+		}
+
+		function erMouseMove(e) {
+			if (dragging) {
+				scrollX = origX + e.offsetX;
+				scrollY = origY + e.offsetY;
+				drawER();
+			}
+		}
+
 </script>
 
 </head>
