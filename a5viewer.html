@@ -57,6 +57,12 @@
 }
 };
 
+function goBackToTopLeft() {
+	scrollX = 0;
+	scrollY = 0;
+	drawER();
+}
+
 function drawER() {
 	var canvasEr = document.getElementById('canvas_er');
 	var width = canvasEr.width;
@@ -68,6 +74,12 @@ function drawER() {
 	var ctx = canvasEr.getContext('2d');
 
 	var viewLevel = document.getElementById("view_level").value;
+
+	maxX = 0;
+	maxY = 0;
+
+	ctx.fillStyle="#000000";
+	ctx.strokeStyle="#000000";
 
 	ctx.lineWidth = 0.5;
 	ctx.clearRect(0, 0, width, height);
@@ -194,6 +206,13 @@ function drawER() {
 				ctx.lineTo(x3 + scrollX, y3 + scrollY);
 				ctx.lineTo(x4 + scrollX, y4 + scrollY);
 				ctx.stroke();
+			}
+
+			if (dragging) {
+				ctx.fillStyle="#FF0000";
+				ctx.strokeStyle="#FF0000";
+				ctx.fillText("" + -scrollX + "," + -scrollY ,8 ,8);
+				ctx.strokeRect(scrollX, scrollY, maxWidth, maxHeight);
 			}
 		}
 
@@ -325,14 +344,17 @@ function drawER() {
 			origX = scrollX - e.offsetX;
 			origY = scrollY - e.offsetY;
 			dragging = true;
+			drawER();
 		}
 
 		function erMouseUp(e) {
 			dragging = false;
+			drawER();
 		}
 
 		function erMouseOut(e) {
 			dragging = false;
+			drawER();
 		}
 
 		function erMouseMove(e) {
@@ -362,7 +384,8 @@ function drawER() {
 				<option value="0">Attributes Only</a>
 					<option value="1">Attributes & Pyhsical Names</a>
 						<option value="2">Attributes & Types</a>
-						</select>
+						</select> 
+						<input type="button" value="Go Back to Origin" onClick="goBackToTopLeft()">
 					</form>
 					<hr />
 					<canvas id='canvas_er' width='2048px' height='2048px' style='border:1px; border-color:gray;'>
