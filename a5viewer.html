@@ -216,7 +216,16 @@ function drawER() {
 					objEntity1 = objEntity3;
 				}
 
-				if (objEntity1.right < objEntity2.left) {
+				if (objEntity1.left == objEntity2.left && objEntity1.top == objEntity2.top) {
+					var x1 = objEntity1.right;
+					var y1 = (objEntity1.top * 2 + objEntity1.bottom * 4) / 6;
+					var x2 = objEntity1.right + 16;
+					var y2 = (objEntity1.top * 2 + objEntity1.bottom * 4) / 6;
+					var x3 = objEntity1.right + 16;
+					var y3 = (objEntity1.top * 1 + objEntity1.bottom * 5) / 6;
+					var x4 = objEntity1.right;
+					var y4 = (objEntity1.top * 1 + objEntity1.bottom * 5) / 6;
+				} else if (objEntity1.right < objEntity2.left) {
 					var x1 = objEntity1.right;
 					var y1 = (objEntity1.top + objEntity1.bottom) / 2;
 					var x2 = (objEntity1.right + objEntity2.left) / 2;
