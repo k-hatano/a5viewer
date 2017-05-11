@@ -5,6 +5,10 @@
 		a5viewer
 	</title>
 	<script>
+	const VIEW_LEVEL_ATTR = 0;
+	const VIEW_LEVEL_ATTR_PNAMES = 1;
+	const VIEW_LEVEL_ATTR_TYPES = 2;
+
 	var reader = new FileReader();
 	var entities = new Array();
 	var relations = new Array();
@@ -63,6 +67,34 @@ function goBackToTopLeft() {
 	drawER();
 }
 
+function find() {
+	var result = window.prompt("Logical Name of Entity (Table):");
+	if (result == null) {
+		return
+	}
+	for (var i in entities) {
+		var entity = entities[i];
+		if (entity.name == result) {
+			document.getElementById('page').value = Object.keys(entity.pages)[0];
+			scrollX = Math.floor( - entity.pages[Object.keys(entity.pages)[0]].x / xRate ) + 32;
+			scrollY = Math.floor( - entity.pages[Object.keys(entity.pages)[0]].y / yRate ) + 32;
+			drawER();
+			return;
+		}
+	}for (var i in entities) {
+		var entity = entities[i];
+		if (entity.name.indexOf(result) >= 0) {
+			document.getElementById('page').value = Object.keys(entity.pages)[0];
+			scrollX = Math.floor( - entity.pages[Object.keys(entity.pages)[0]].x / xRate ) + 32;
+			scrollY = Math.floor( - entity.pages[Object.keys(entity.pages)[0]].y / yRate ) + 32;
+			drawER();
+			return;
+		}
+	}
+
+	window.alert("Not found.");
+}
+
 function drawER() {
 	var canvasEr = document.getElementById('canvas_er');
 	var width = canvasEr.width;
@@ -97,9 +129,9 @@ function drawER() {
 		var top = parseInt(entity.pages[page].y, 10) / yRate;
 		var right = parseInt(entity.nameWidth, 10);
 		var bottom = top + (entity.fields.length * 16);
-		if (viewLevel == 1) {
+		if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
 			right = parseInt(entity.nameWidth, 10) + parseInt(entity.keyWidth, 10);
-		} else if (viewLevel == 2) {
+		} else if (viewLevel == VIEW_LEVEL_ATTR_TYPES) {
 			right = parseInt(entity.nameWidth, 10) + parseInt(entity.typeWidth, 10);
 		} 
 		ctx.clearRect(left-4 + scrollX, top+4 + scrollY, right +12, bottom-top+4);
@@ -111,12 +143,12 @@ function drawER() {
 			ctx.fillText(entity.fields[j].name, left + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 		}
 
-		if (viewLevel == 1) {
+		if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
 			ctx.fillText(entity.key, left + offset + 4 + scrollX, top + scrollY);
 			for (var j in entity.fields) {
 				ctx.fillText(entity.fields[j].key, left + offset + 4 + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 			}
-		} else if (viewLevel == 2) {
+		} else if (viewLevel == VIEW_LEVEL_ATTR_TYPES) {
 			for (var j in entity.fields) {
 				ctx.fillText(entity.fields[j].type, left + offset + 4 + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 			}
@@ -318,19 +350,22 @@ function drawER() {
 					relation.pages = new Array();
 				} else if (txtArr[line].match(/^ViewMode=(\d+)/)) {
 					if (RegExp.$1 == 0 || RegExp.$1 == 1 || RegExp.$1 == 2) {
-						document.getElementById("view_level").value = 0;
+						document.getElementById("view_level").value = VIEW_LEVEL_ATTR;
 					} else if (RegExp.$1 == 3 || RegExp.$1 == 4 || RegExp.$1 == 6) {
-						document.getElementById("view_level").value = 1;
+						document.getElementById("view_level").value = VIEW_LEVEL_ATTR_PNAMES;
 					} else if (RegExp.$1 == 5 || RegExp.$1 == 7) {
-						document.getElementById("view_level").value = 2;
+						document.getElementById("view_level").value = VIEW_LEVEL_ATTR_TYPES;
 					}
 				}
 			}
 
 			var selectPage = document.form_a5er.page;
 			selectPage.options = new Array();
+
+			var value = 0;
 			for (var page in pages) {
 				selectPage.options[page] = new Option(pages[page]);
+				value++;
 			}
 
 			scrollX = 0;
@@ -394,6 +429,7 @@ function drawER() {
 						<option value="2">Attributes & Types</a>
 						</select> 
 						<input type="button" value="Go Back to Origin" onClick="goBackToTopLeft()">
+						<input type="button" value="Find" onClick="find()">
 					</form>
 					<hr />
 					<canvas id='canvas_er' width='2048px' height='2048px' style='border:1px; border-color:gray;'>
