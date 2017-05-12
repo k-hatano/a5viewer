@@ -116,7 +116,7 @@ function drawER() {
 	ctx.lineWidth = 0.5;
 	ctx.clearRect(0, 0, width, height);
 
-	var page = document.getElementById('page').value;
+	var page = document.getElementById('page').value.toUpperCase();
 
 	for (var i in entities) {
 		var entity = entities[i];
@@ -283,15 +283,12 @@ function drawER() {
 			var fields = new Array();
 			for (var line in txtArr) {
 				if (txtArr[line].match(/^Position=\"(.*)\",(\d+),(\d+)/)) {
-					relation.pages.push(RegExp.$1);
+					relation.pages.push(RegExp.$1.toUpperCase());
 					var page = new Array();
-					page.name = RegExp.$1;
+					page.name = RegExp.$1.toUpperCase();
 					page.x = RegExp.$2;
 					page.y = RegExp.$3;
 					entity.pages[page.name] = page;
-					if (pages.indexOf(page.name) < 0) {
-						pages.push(page.name);
-					}
 				} else if (txtArr[line].match(/^Field=\"(.*?)\",\"(.*?)\",\"(.*?)\"/)) {
 					var field = { name: RegExp.$1, key: RegExp.$2, type: RegExp.$3 };
 					var nameWidth = ctx.measureText(RegExp.$1).width;
@@ -365,7 +362,9 @@ function drawER() {
 					} else if (RegExp.$1 == 5 || RegExp.$1 == 7) {
 						document.getElementById("view_level").value = VIEW_LEVEL_ATTR_TYPES;
 					}
-				}
+				} else if (txtArr[line].match(/^PageInfo=\"([^\"]*)\"/)) {
+					pages.unshift(RegExp.$1);
+				} 
 			}
 
 			var selectPage = document.form_a5er.page;
