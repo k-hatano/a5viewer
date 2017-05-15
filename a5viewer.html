@@ -141,6 +141,9 @@ function drawER() {
 		ctx.fillText(entity.name, left + scrollX, top + scrollY);
 		for (var j in entity.fields) {
 			ctx.fillText(entity.fields[j].name, left + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
+			if (entity.fields[j].not_null == "\"NOT NULL\"") {
+				ctx.strokeRect(left + scrollX - 4, top + (parseInt(j)) * 16 + scrollY + 11, 3, 4);
+			}
 		}
 
 		if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
@@ -152,12 +155,12 @@ function drawER() {
 			for (var j in entity.fields) {
 				ctx.fillText(entity.fields[j].type, left + offset + 4 + scrollX, top + (parseInt(j)+1) * 16 + scrollY);
 			}
-
 		}
 
-		entities[i].left = parseInt(left-4);
+
+		entities[i].left = parseInt(left-6);
 		entities[i].top = parseInt(top+4);
-		entities[i].width = parseInt(right +12);
+		entities[i].width = parseInt(right +14);
 		entities[i].height = parseInt(bottom-top+4);
 		entities[i].right = parseInt(entities[i].left + entities[i].width);
 		entities[i].bottom = parseInt(entities[i].top + entities[i].height);
@@ -289,8 +292,8 @@ function drawER() {
 					page.x = RegExp.$2;
 					page.y = RegExp.$3;
 					entity.pages[page.name] = page;
-				} else if (txtArr[line].match(/^Field=\"(.*?)\",\"(.*?)\",\"(.*?)\"/)) {
-					var field = { name: RegExp.$1, key: RegExp.$2, type: RegExp.$3 };
+				} else if (txtArr[line].match(/^Field=\"(.*?)\",\"(.*?)\",\"(.*?)\",(.*?),/)) {
+					var field = { name: RegExp.$1, key: RegExp.$2, type: RegExp.$3, not_null: RegExp.$4 };
 					var nameWidth = ctx.measureText(RegExp.$1).width;
 					if (entity.nameWidth == undefined) {
 						entity.nameWidth = nameWidth;
