@@ -237,16 +237,20 @@ function drawER() {
 					continue;
 				}
 
+				var filp = false;
+
 				if (objEntity1.left > objEntity2.right) {
 					var objEntity3 = objEntity2;
 					objEntity2 = objEntity1;
 					objEntity1 = objEntity3;
+					filp = true;
 				}
 
 				if (objEntity1.top > objEntity2.bottom) {
 					var objEntity3 = objEntity2;
 					objEntity2 = objEntity1;
 					objEntity1 = objEntity3;
+					filp = true;
 				}
 
 				if (objEntity1.left == objEntity2.left && objEntity1.top == objEntity2.top) {
@@ -276,6 +280,50 @@ function drawER() {
 					var y3 = (objEntity2.top + objEntity1.bottom) / 2;
 					var x4 = (objEntity2.right + objEntity2.left) / 2;
 					var y4 = objEntity2.top
+				}
+
+				ctx.fillStyle="#000000";
+
+				var relType1;
+				if (filp) {
+					relType1 = relation.relationType2;
+				} else {
+					relType1 = relation.relationType1;
+				}
+
+				if (relType1 == 0) {
+					ctx.fillText("" ,x1 + 4 + scrollX ,y1 - 4 + scrollY);
+				} else if (relType1 == 1) {
+					ctx.fillText("0...1" ,x1 + 4 + scrollX ,y1 - 4 + scrollY);
+				} else if (relType1 == 2) {
+					ctx.fillText("1" ,x1 + 4 + scrollX ,y1 - 4 + scrollY);
+				} else if (relType1 == 3) {
+					ctx.fillText("0...N" ,x1 + 4 + scrollX ,y1 - 4 + scrollY);
+				} else if (relType1 == 4) {
+					ctx.fillText("1...N" ,x1 + 4 + scrollX ,y1 - 4 + scrollY);
+				} else if (relType1 == 5) {
+					ctx.fillText("N" ,x1 + 4 + scrollX ,y1 - 4 + scrollY);
+				}
+
+				var relType2;
+				if (filp) {
+					relType2 = relation.relationType1;
+				} else {
+					relType2 = relation.relationType2;
+				}
+
+				if (relType2 == 0) {
+					ctx.fillText("" ,x4 - 24 + scrollX ,y4 - 4 + scrollY);
+				} else if (relType2 == 1) {
+					ctx.fillText("0...1" ,x4 - 24 + scrollX ,y4 - 4 + scrollY);
+				} else if (relType2 == 2) {
+					ctx.fillText("1" ,x4 - 24 + scrollX ,y4 - 4 + scrollY);
+				} else if (relType2 == 3) {
+					ctx.fillText("0...N" ,x4 - 24 + scrollX ,y4 - 4 + scrollY);
+				} else if (relType2 == 4) {
+					ctx.fillText("1...N" ,x4 - 24 + scrollX ,y4 - 4 + scrollY);
+				} else if (relType2 == 5) {
+					ctx.fillText("N" ,x4 - 24 + scrollX ,y4 - 4 + scrollY);
 				}
 
 				ctx.beginPath();
@@ -371,6 +419,10 @@ function drawER() {
 					relation.entity1 = RegExp.$1;
 				} else if (txtArr[line].match(/^Entity2=(.+)/)) {
 					relation.entity2 = RegExp.$1;
+				} else if (txtArr[line].match(/^RelationType1=(.+)/)) {
+					relation.relationType1 = RegExp.$1;
+				} else if (txtArr[line].match(/^RelationType2=(.+)/)) {
+					relation.relationType2 = RegExp.$1;
 				} else if (txtArr[line].match(/^Bar1=(\d+)/)) {
 					relation.x = RegExp.$1;
 				} else if (txtArr[line].match(/^Bar2=(\d+)/)) {
