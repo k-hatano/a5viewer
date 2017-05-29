@@ -5,9 +5,10 @@
 		a5viewer
 	</title>
 	<script>
-	const VIEW_LEVEL_ATTR = 0;
-	const VIEW_LEVEL_ATTR_PNAMES = 1;
-	const VIEW_LEVEL_ATTR_TYPES = 2;
+	const VIEW_LEVEL_KEYS = 0;
+	const VIEW_LEVEL_ATTR = 1;
+	const VIEW_LEVEL_ATTR_PNAMES = 2;
+	const VIEW_LEVEL_ATTR_TYPES = 3;
 
 	var reader = new FileReader();
 	var entities = new Array();
@@ -129,7 +130,9 @@ function drawER() {
 		var top = parseInt(entity.pages[page].y, 10) / yRate;
 		var right = parseInt(entity.nameWidth, 10);
 		var bottom = top + (entity.fields.length * 16);
-		if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
+		if (viewLevel == VIEW_LEVEL_KEYS) {
+			bottom = top + (entity.keysCount * 16);
+		} else if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
 			right = parseInt(entity.nameWidth, 10) + parseInt(entity.keyWidth, 10);
 		} else if (viewLevel == VIEW_LEVEL_ATTR_TYPES) {
 			right = parseInt(entity.nameWidth, 10) + parseInt(entity.typeWidth, 10);
@@ -161,26 +164,28 @@ function drawER() {
 				keyCount++;
 			}
 		}
-		for (var j in entity.fields) {
-			if (entity.fields[j].keyNo.length == 0) {
-				ctx.fillText(entity.fields[j].name, left + scrollX, top + (fieldIndex+1) * 16 + scrollY);
-				if (entity.fields[j].not_null == "\"NOT NULL\"") {
-					ctx.strokeRect(left + scrollX - 4, top + fieldIndex * 16 + scrollY + 11, 3, 4);
-				}
+		if (viewLevel != VIEW_LEVEL_KEYS) {
+			for (var j in entity.fields) {
+				if (entity.fields[j].keyNo.length == 0) {
+					ctx.fillText(entity.fields[j].name, left + scrollX, top + (fieldIndex+1) * 16 + scrollY);
+					if (entity.fields[j].not_null == "\"NOT NULL\"") {
+						ctx.strokeRect(left + scrollX - 4, top + fieldIndex * 16 + scrollY + 11, 3, 4);
+					}
 
-				if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
-					ctx.fillText(entity.fields[j].key, left + offset + 4 + scrollX, top + (fieldIndex+1) * 16 + scrollY);
-				} else if (viewLevel == VIEW_LEVEL_ATTR_TYPES) {
-					ctx.fillText(entity.fields[j].type, left + offset + 4 + scrollX, top + (fieldIndex+1) * 16 + scrollY);
+					if (viewLevel == VIEW_LEVEL_ATTR_PNAMES) {
+						ctx.fillText(entity.fields[j].key, left + offset + 4 + scrollX, top + (fieldIndex+1) * 16 + scrollY);
+					} else if (viewLevel == VIEW_LEVEL_ATTR_TYPES) {
+						ctx.fillText(entity.fields[j].type, left + offset + 4 + scrollX, top + (fieldIndex+1) * 16 + scrollY);
+					}
+					fieldIndex++;
 				}
-				fieldIndex++;
 			}
-		}
-		if (keyCount > 0) {
-			ctx.beginPath();
-			ctx.moveTo(left + scrollX - 4, top + keyCount * 16 + 5 + scrollY);
-			ctx.lineTo(left + right + scrollX + 6, top + keyCount * 16 + 5 + scrollY);
-			ctx.stroke();
+			if (keyCount > 0) {
+				ctx.beginPath();
+				ctx.moveTo(left + scrollX - 4, top + keyCount * 16 + 5 + scrollY);
+				ctx.lineTo(left + right + scrollX + 6, top + keyCount * 16 + 5 + scrollY);
+				ctx.stroke();
+			}
 		}
 
 		entities[i].left = parseInt(left-6);
@@ -305,6 +310,7 @@ function drawER() {
 			pages = new Array();
 
 			var entity = new Array();
+			entity.keysCount = 0;
 			entity.pages = new Array();
 			var relation = new Array();
 			relation.pages = new Array();
@@ -336,6 +342,13 @@ function drawER() {
 						entity.typeWidth = typeWidth;
 					} else if (entity.typeWidth < typeWidth) {
 						entity.typeWidth = typeWidth;
+					}
+					if (RegExp.$5 != null && RegExp.$5.length > 0) {
+						if (entity.keysCount == undefined) {
+							entity.keysCount = 1;
+						} else {
+							entity.keysCount++;
+						}
 					}
 					fields.unshift(field);
 				} else if (txtArr[line].match(/^PName=(.+)/)) {
@@ -371,6 +384,7 @@ function drawER() {
 					entity.fields = fields;
 					entities.unshift(entity);
 					entity = new Array();
+					entity.keysCount = 0;
 					entity.pages = new Array();
 					fields = new Array();
 					relation = new Array();
@@ -378,17 +392,20 @@ function drawER() {
 				} else if (txtArr[line] == "[Relation]") {
 					relations.unshift(relation);
 					entity = new Array();
+					entity.keysCount = 0;
 					entity.pages = new Array();
 					fields = new Array();
 					relation = new Array();
 					relation.pages = new Array();
 				} else if (txtArr[line].match(/^ViewMode=(\d+)/)) {
 					if (RegExp.$1 == 0 || RegExp.$1 == 1 || RegExp.$1 == 2) {
+						document.getElementById("view_level").value = VIEW_LEVEL_KEYS;
+					} else if (RegExp.$1 == 0 || RegExp.$1 == 1 || RegExp.$1 == 2) {
 						document.getElementById("view_level").value = VIEW_LEVEL_ATTR;
 					} else if (RegExp.$1 == 3 || RegExp.$1 == 4 || RegExp.$1 == 6) {
-						document.getElementById("view_level").value = VIEW_LEVEL_ATTR_PNAMES;
-					} else if (RegExp.$1 == 5 || RegExp.$1 == 7) {
 						document.getElementById("view_level").value = VIEW_LEVEL_ATTR_TYPES;
+					} else if (RegExp.$1 == 5 || RegExp.$1 == 7) {
+						document.getElementById("view_level").value = VIEW_LEVEL_ATTR_PNAMES;
 					}
 				} else if (txtArr[line].match(/^PageInfo=\"([^\"]*)\"/)) {
 					pages.unshift(RegExp.$1);
@@ -460,9 +477,10 @@ function drawER() {
 			&nbsp;&nbsp;
 			<label for="view_level">View Level: </label>
 			<select id="view_level" onchange="drawER()">
-				<option value="0">Attributes Only</a>
-					<option value="1">Attributes & Pyhsical Names</a>
-						<option value="2">Attributes & Types</a>
+				<option value="0">Keys</a>
+				<option value="1">Attributes</a>
+					<option value="2">Attributes & Pyhsical Names</a>
+						<option value="3">Attributes & Types</a>
 						</select> 
 						<input type="button" value="Go Back to Origin" onClick="goBackToTopLeft()">
 						<input type="button" value="Find" onClick="find()">
